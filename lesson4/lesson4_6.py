@@ -14,7 +14,7 @@ class Window(ThemedTk):
         btn3 = ttk.Button(topFrame,text="按鈕3")
         btn3.pack(side='left',expand=True,fill='x',padx=10)
         topFrame.pack(padx=10,pady=(10,0),ipadx=10,ipady=10,expand=True,fill='x')      
-        bottomFrame = ttk.Frame(self,width=500,height=300,borderwidth=1,relief='groove')
+        bottomFrame = ttk.Frame(self,width=600,height=300,borderwidth=1,relief='groove')
         bottomFrame.pack(padx=10,pady=10)
 
 def main():
