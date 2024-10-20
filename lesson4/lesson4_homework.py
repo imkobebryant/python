@@ -4,7 +4,7 @@ from tkinter import ttk
 class Window(ThemedTk):
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
-        self.title('使用ttk的套件')
+        self.title('呂安杰的lesson4作業')
         style = ttk.Style(self)        
 
         topFrame = ttk.Frame(self,borderwidth=1,relief='solid')
