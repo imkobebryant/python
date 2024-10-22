@@ -22,22 +22,19 @@ class Window(ThemedTk):
         #==============bottomFrame===============
         bottomFrame = ttk.Frame(self)
 
-        # 加入 Check button
         self.agreement = tk.StringVar(value="disagree")
         
-        ttk.Checkbutton(bottomFrame,
+        ttk.Checkbutton(bottomFrame,                   
                         text='I agree',
-                        command=self.agreement_changed,
-                        variable=self.agreement,
+                        command=self.agreement_changed,variable=self.agreement,
                         onvalue='agree',
                         offvalue='disagree').pack()
 
         bottomFrame.pack(expand=True, fill='x', padx=20, pady=(0, 20), ipadx=10, ipady=10)
         #==============end bottomFrame===============
     
-    # 定義觸發事件的函數
     def agreement_changed(self):
-        showinfo(title='Result', message=f'你選擇了: {self.agreement.get()}')
+        showinfo(title='Result', message=self.agreement.get())
 
 def main():
     window = Window(theme="arc")
