@@ -9,7 +9,7 @@ class Window(ThemedTk):
     def __init__(self,*args, **kwargs):
         super().__init__(*args, **kwargs)
         self.title('登入')
-        self.resizable(False,False)
+        self.resizable(False, False)
         #==============style===============
         style = ttk.Style(self)
         style.configure('TopFrame.TLabel',font=('Helvetica',20))
@@ -25,13 +25,26 @@ class Window(ThemedTk):
 
         #==============bottomFrame===============
         bottomFrame = ttk.Frame(self)
-        sitenames = datasource.get_sitename()
-        self.selected_site = tk.StringVar()
-        sitenames_cb = ttk.Combobox(bottomFrame, textvariable=self.selected_site,values=sitenames,state='readonly')
-        self.selected_site.set('請選擇站點')
-        sitenames_cb.bind('<<ComboboxSelected>>', self.sitename_selected)
-        sitenames_cb.pack(side='left',expand=True,anchor='n')        
+            #==============SelectedFrame===============        
+        self.selectedFrame= ttk.Frame(self,padding=[10,10,10,10])
+        #combobox選擇城市      
+        counties = datasource.get_county()
+        #self.selected_site = tk.StringVar()
+        self.selected_county = tk.StringVar()
+        sitenames_cb = ttk.Combobox(self.selectedFrame, textvariable=self.selected_county,values=counties,state='readonly')
+        self.selected_county.set('請選擇城市')
+        sitenames_cb.bind('<<ComboboxSelected>>', self.county_selected)
+        sitenames_cb.pack(anchor='n',pady=10)
+
+        self.listbox = None 
         
+        
+
+
+
+        self.selectedFrame.pack(side='left',expand=True,fill='y',padx=(20,0))
+            #==============End SelectedFrame=============== 
+    
         
 
         # define columns
@@ -70,16 +83,33 @@ class Window(ThemedTk):
 
             #==============end bottomFrame===============
         
+    def county_selected(self,event):
+        selected = self.selected_county.get()
+        counties = datasource.get_sitename(county=selected)
+        #listbox選擇站點
+        if self.listbox:
+            self.listbox.destroy()
+        var = tk.Variable(value=counties)
+        self.listbox = tk.Listbox(
+                    self.selectedFrame,
+                    listvariable=var,
+                    height=6,
+                    selectmode=tk.EXTENDED
+                )
+        self.listbox.pack()
+
+
     def sitename_selected(self,event):
+        for children in self.tree.get_children():
+            self.tree.delete(children)
         selected = self.selected_site.get()        
         selected_data = datasource.get_selected_data(selected)
-        # 清除 Treeview 中的現有項目
-        for row in self.tree.get_children():
-            self.tree.delete(row)
-        
-        # 插入新的數據
         for record in selected_data:
             self.tree.insert("", "end", values=record)
+
+    
+        
+ 
 
 def main():
     datasource.download_data() #下載至資料庫
