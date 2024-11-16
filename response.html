@@ -1,0 +1,752 @@
+
+
+<!DOCTYPE html>
+<html>
+	<head><meta charset="utf-8" /><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><title>
+	登記狀況 - 寵物登記管理資訊網
+</title>
+
+		<!--Fonts and icons-->
+		<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" /><link rel="shortcut icon" href="/img/favicon.png" />
+
+		<!-- Google tag (gtag.js) -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-VSFH196MDY"></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){dataLayer.push(arguments);}
+			gtag('js', new Date());
+			gtag('config', 'G-VSFH196MDY');
+
+			
+			window.addEventListener('load', function() {
+				try {
+					if(document.querySelector('.UX-index')) {
+						gaPageFunction({ title: '前台 - 首頁' });
+					}
+					else {
+						gaPageFunction({ title: '前台 - ' + document.querySelector('.chapter-title .h1').textContent });
+					}
+				} catch(err) {
+					gaPageFunction({ title: '前台 - ' + location.pathname });
+				}
+			})
+		</script>
+
+		
+		<link rel="stylesheet" href="/css/sweetalert2.min.css" />
+		<link rel="stylesheet" href="../css/vue-uxContactTop.min.css?v=20241105" />
+		<link rel="stylesheet" href="../css/vue-uxMultiVerifyLogin.min.css?v=20241105" />
+		<link rel="stylesheet" href="../css/vue-uxSelectDate.min.css?v=20241105" />
+		<link rel="stylesheet" href="../css/tailwind/helper-ux.min.css?v=20241105" />
+		<link rel="stylesheet" href="../css/Web/uxWeb.min.css?v=20241105" />
+
+		
+
+	<meta name="description" content="登記狀況統計表格。" />
+
+	
+	<link href="../css/vue-uxRoundSlider.min.css?v=20241105" rel="stylesheet" />
+
+	
+	<style>
+		.birthday-wrap {
+			margin-bottom: 2rem;
+		}
+		.birthday-wrap .label {
+			padding-right: 0 !important;
+			padding-left: 0 !important;
+			font-size: 12px;
+			color: transparent;
+		}
+		.birthday-wrap > div:last-child .label {
+			display: none;
+		}
+		.table {
+			--td_padding: .875rem; /* 14px */
+		}
+		@media screen and (min-width: 640px) and (max-width: 1280px) {
+			.card-data .dd {
+				padding-right: 2rem;
+				padding-left: 2rem;
+			}
+		}
+	</style>
+
+</head>
+	<body class="custom-scroll">
+		<form method="post" action="./O302.aspx" id="aspnetForm">
+<div class="aspNetHidden">
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="/wEPDwUJNDMyMTEyNjU4D2QWAmYPZBYCAgMPZBYCZg8WAh4EVGV4dAXWICA8bGkgY2xhc3M9J25hdi1maXJzdCc+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxhIGhyZWY9JyMnPuWLleS/neebuOmXnOe2suermTxpIGNsYXNzPSdtYXRlcmlhbC1pY29ucyc+ZXhwYW5kX21vcmU8L2k+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvYT48dWwgY2xhc3M9J25hdi1zZWNvbmQtd3JhcCBjdXN0b20tc2Nyb2xsJz48bGkgY2xhc3M9J25hdi1zZWNvbmQnPjxhIGhyZWY9Jy93ZWIvTzEuYXNweCc+57ay56uZ5pyA5paw5raI5oGvDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L2E+PC9saT48bGkgY2xhc3M9J25hdi1zZWNvbmQnPjxhIGhyZWY9Jy9odHRwczrvvI/vvI9hbmltYWwubW9hLmdvdi50dy8nPuWLleS/neizh+ioiue2sg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9hPjwvbGk+PGxpIGNsYXNzPSduYXYtc2Vjb25kJz48YSBocmVmPScvQW5pbWFsQXBwL0Fubm91bmNlTWVudF9Bbm5vdW5jZS5hc3B4Jz7lhajlnIvli5XnianmlLblrrnnrqHnkIbns7vntbENCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvYT48L2xpPjwvdWw+IDwvbGk+IDxsaSBjbGFzcz0nbmF2LWZpcnN0Jz4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPGEgaHJlZj0nIyc+5a+154mp55m76KiY6IiH5p+l6KmiPGkgY2xhc3M9J21hdGVyaWFsLWljb25zJz5leHBhbmRfbW9yZTwvaT4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9hPjx1bCBjbGFzcz0nbmF2LXNlY29uZC13cmFwIGN1c3RvbS1zY3JvbGwnPjxsaSBjbGFzcz0nbmF2LXNlY29uZCc+PGEgaHJlZj0nL1dlYi9PMjAyLmFzcHgnPuWvteeJqeeZu+iomOmgkOeUs+i+pg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9hPjwvbGk+PGxpIGNsYXNzPSduYXYtc2Vjb25kJz48YSBocmVmPScvV2ViL08zMDEuYXNweCc+55m76KiY5qmf5qeL5p+l6KmiDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L2E+PC9saT48bGkgY2xhc3M9J25hdi1zZWNvbmQnPjxhIGhyZWY9Jy93ZWIvTzIwMV9GaWRvLmFzcHgnPuWvteeJqeizh+aWmeafpeipog0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9hPjwvbGk+PGxpIGNsYXNzPSduYXYtc2Vjb25kJz48YSBocmVmPScvV2ViL0ZBUS5hc3B4Jz7lr7XniannmbvoqJhGQVENCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvYT48L2xpPjwvdWw+IDwvbGk+IDxsaSBjbGFzcz0nbmF2LWZpcnN0Jz4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPGEgaHJlZj0nIyc+6YG65aSx6IiH5Y2U5bCLPGkgY2xhc3M9J21hdGVyaWFsLWljb25zJz5leHBhbmRfbW9yZTwvaT4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9hPjx1bCBjbGFzcz0nbmF2LXNlY29uZC13cmFwIGN1c3RvbS1zY3JvbGwnPjxsaSBjbGFzcz0nbmF2LXNlY29uZCc+PGEgaHJlZj0nL1dlYi9PMjA1LmFzcHgnPumBuuWkseeUs+WgsQ0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9hPjwvbGk+PGxpIGNsYXNzPSduYXYtc2Vjb25kJz48YSBocmVmPScvV2ViL08yMDYuYXNweCc+6aCY5Zue6Ki76Yq3DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L2E+PC9saT48bGkgY2xhc3M9J25hdi1zZWNvbmQnPjxhIGhyZWY9Jy9XZWIvTzIwMy5hc3B4Jz7pgbrlpLHllZ/kuosNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvYT48L2xpPjxsaSBjbGFzcz0nbmF2LXNlY29uZCc+PGEgaHJlZj0nL1dlYi9PMjA0LmFzcHgnPuWwi+eNsuWVn+S6iw0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9hPjwvbGk+PC91bD4gPC9saT4gPGxpIGNsYXNzPSduYXYtZmlyc3QnPg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8YSBocmVmPScjJz7mpa3ogIXlkI3llq7oiIfntbHoqIjmlbjmk5o8aSBjbGFzcz0nbWF0ZXJpYWwtaWNvbnMnPmV4cGFuZF9tb3JlPC9pPg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L2E+PHVsIGNsYXNzPSduYXYtc2Vjb25kLXdyYXAgY3VzdG9tLXNjcm9sbCc+PGxpIGNsYXNzPSduYXYtc2Vjb25kJz48YSBocmVmPScvV2FuZGVyaW5nL0hlYXRNYXBWMS5hc3B4Jz7niqzpmrvnrqHnkIbmiJDmlYgNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvYT48L2xpPjxsaSBjbGFzcz0nbmF2LXNlY29uZCc+PGEgaHJlZj0nL1dlYi9PMzAyLmFzcHgnPue4o+W4guWvteeJqeeZu+iomOeLgOazgQ0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9hPjwvbGk+PGxpIGNsYXNzPSduYXYtc2Vjb25kJz48YSBocmVmPScvUGV0c01hcC9QZXRzTWFwLmFzcHgnPueKrOiyk+aItuexjee1seioiA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9hPjwvbGk+PGxpIGNsYXNzPSduYXYtc2Vjb25kJz48YSBocmVmPScvV2ViL08zMDQuYXNweCc+5qCh54qs5p+l6KmiDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L2E+PC9saT48bGkgY2xhc3M9J25hdi1zZWNvbmQnPjxhIGhyZWY9Jy9XZWIvQnVzaW5lc3NMaXN0LmFzcHgnPuWQiOazleWvteeJqealreiAheWQjeWWrg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9hPjwvbGk+PGxpIGNsYXNzPSduYXYtc2Vjb25kJz48YSBocmVmPScvV2ViL1BldEhpc3RvcnkuYXNweCc+5ZWG55So54m55a6a5a+154mp5L6G5rqQ6L+95rqvDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L2E+PC9saT48bGkgY2xhc3M9J25hdi1zZWNvbmQnPjxhIGhyZWY9Jy9XZWIvT0NvdXJzZS5hc3B4Jz7kurrlk6HorJvnv5LoqrLnqIsNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvYT48L2xpPjwvdWw+IDwvbGk+IDxsaSBjbGFzcz0nbmF2LWZpcnN0Jz4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPGEgaHJlZj0nIyc+5bel5L2c5Lq65ZOh5YWl5Y+jPGkgY2xhc3M9J21hdGVyaWFsLWljb25zJz5leHBhbmRfbW9yZTwvaT4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9hPjx1bCBjbGFzcz0nbmF2LXNlY29uZC13cmFwIGN1c3RvbS1zY3JvbGwnPjxsaSBjbGFzcz0nbmF2LXNlY29uZCc+PGEgaHJlZj0nLz9sb2dpbj0xJnM9OTk5Jz7lr7XnmbvooYzmlL/os4foqIrns7vntbENCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvYT48L2xpPjxsaSBjbGFzcz0nbmF2LXNlY29uZCc+PGEgaHJlZj0nLz9sb2dpbj0xJnM9NjYnPueJueWumuWvteeJqealreeuoeeQhuezu+e1sQ0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9hPjwvbGk+PGxpIGNsYXNzPSduYXYtc2Vjb25kJz48YSBocmVmPScvP2xvZ2luPTEmcz02NSc+5YWo5ZyL5YuV54mp5pS25a65566h55CG57O757WxDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L2E+PC9saT48bGkgY2xhc3M9J25hdi1zZWNvbmQnPjxhIGhyZWY9Jy8/bG9naW49MSZzPTk5OCc+5YuV5L+d5qGI5Lu2566h55CG57O757WxDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L2E+PC9saT48bGkgY2xhc3M9J25hdi1zZWNvbmQnPjxhIGhyZWY9Jy8/bG9naW49MSZzPTg0Jz7kurrlk6HorJvnv5LnrqHnkIbns7vntbENCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvYT48L2xpPjwvdWw+IDwvbGk+PGxpIGNsYXNzPSduYXYtZmlyc3QnPg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxhIGhyZWY9J2luZGV4LmFzcHg/dD1mZWVkZXInPumjvOS4u+eZu+WFpTxpIGNsYXNzPSdtYXRlcmlhbC1pY29ucyc+ZXhwYW5kX21vcmU8L2k+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9hPg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L2xpPmRkDx3Kv7N745/237Jse+XJ2yzAeT3f0pAbYSA38fYId3A=" />
+</div>
+
+<div class="aspNetHidden">
+
+	<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="4BDD263B" />
+</div>
+
+			
+			<div class="Web relative">
+
+				
+				<header class="header-navbar">
+					<div>
+
+						
+						<div class="logo">
+							<a href="../">
+								<div class="img">
+									<img class="w-full" src="/img/UX/logo_UX.svg" width="44" height="42" alt="寵物登記管理資訊網">
+								</div>
+								<div>
+									<h2>寵物登記管理資訊網</h2>
+									<p>Pet Registration Information System</p>
+								</div>
+							</a>
+						</div>
+
+						
+						<a class="js-burger" href="#">
+							<span class="first"></span>
+							<span class="middle"></span>
+							<span class="end"></span>
+						</a>
+
+						
+						<nav>
+							<ul>
+								 <li class='nav-first'>
+                                            <a href='#'>動保相關網站<i class='material-icons'>expand_more</i>
+                                            </a><ul class='nav-second-wrap custom-scroll'><li class='nav-second'><a href='/web/O1.aspx'>網站最新消息
+                                    </a></li><li class='nav-second'><a href='/https:／／animal.moa.gov.tw/'>動保資訊網
+                                    </a></li><li class='nav-second'><a href='/AnimalApp/AnnounceMent_Announce.aspx'>全國動物收容管理系統
+                                    </a></li></ul> </li> <li class='nav-first'>
+                                            <a href='#'>寵物登記與查詢<i class='material-icons'>expand_more</i>
+                                            </a><ul class='nav-second-wrap custom-scroll'><li class='nav-second'><a href='/Web/O202.aspx'>寵物登記預申辦
+                                    </a></li><li class='nav-second'><a href='/Web/O301.aspx'>登記機構查詢
+                                    </a></li><li class='nav-second'><a href='/web/O201_Fido.aspx'>寵物資料查詢
+                                    </a></li><li class='nav-second'><a href='/Web/FAQ.aspx'>寵物登記FAQ
+                                    </a></li></ul> </li> <li class='nav-first'>
+                                            <a href='#'>遺失與協尋<i class='material-icons'>expand_more</i>
+                                            </a><ul class='nav-second-wrap custom-scroll'><li class='nav-second'><a href='/Web/O205.aspx'>遺失申報
+                                    </a></li><li class='nav-second'><a href='/Web/O206.aspx'>領回註銷
+                                    </a></li><li class='nav-second'><a href='/Web/O203.aspx'>遺失啟事
+                                    </a></li><li class='nav-second'><a href='/Web/O204.aspx'>尋獲啟事
+                                    </a></li></ul> </li> <li class='nav-first'>
+                                            <a href='#'>業者名單與統計數據<i class='material-icons'>expand_more</i>
+                                            </a><ul class='nav-second-wrap custom-scroll'><li class='nav-second'><a href='/Wandering/HeatMapV1.aspx'>犬隻管理成效
+                                    </a></li><li class='nav-second'><a href='/Web/O302.aspx'>縣市寵物登記狀況
+                                    </a></li><li class='nav-second'><a href='/PetsMap/PetsMap.aspx'>犬貓戶籍統計
+                                    </a></li><li class='nav-second'><a href='/Web/O304.aspx'>校犬查詢
+                                    </a></li><li class='nav-second'><a href='/Web/BusinessList.aspx'>合法寵物業者名單
+                                    </a></li><li class='nav-second'><a href='/Web/PetHistory.aspx'>商用特定寵物來源追溯
+                                    </a></li><li class='nav-second'><a href='/Web/OCourse.aspx'>人員講習課程
+                                    </a></li></ul> </li> <li class='nav-first'>
+                                            <a href='#'>工作人員入口<i class='material-icons'>expand_more</i>
+                                            </a><ul class='nav-second-wrap custom-scroll'><li class='nav-second'><a href='/?login=1&s=999'>寵登行政資訊系統
+                                    </a></li><li class='nav-second'><a href='/?login=1&s=66'>特定寵物業管理系統
+                                    </a></li><li class='nav-second'><a href='/?login=1&s=65'>全國動物收容管理系統
+                                    </a></li><li class='nav-second'><a href='/?login=1&s=998'>動保案件管理系統
+                                    </a></li><li class='nav-second'><a href='/?login=1&s=84'>人員講習管理系統
+                                    </a></li></ul> </li><li class='nav-first'>
+                                        <a href='index.aspx?t=feeder'>飼主登入<i class='material-icons'>expand_more</i>
+                                        </a>
+                                      </li>
+								<li class="nav-first search">
+									<a href="#modal-search" class="modaal-search">
+										<i class="material-icons">search</i>
+									</a>
+								</li>
+							</ul>
+						</nav>
+					</div>
+				</header>
+				
+				
+				
+
+	
+	<div id="ux-round-slider" class="ux-round-slider">
+		<use-ux-round-slider></use-ux-round-slider>
+	</div>
+
+	<div id="vue-O302" class="Web avoid-header-margin pb-32">
+
+		
+		<section class="chapter-title">
+			<h1 class="h1">登記狀況</h1>
+			<p class="h3" v-if="!!Substandard">最後統計日：{{ Substandard }}</p>
+		</section>
+
+		
+		<section class="card-wrap max-820:!px-4">
+	
+			<div class="max-w-card-lg w-full">
+				<dl class="card card-data mb-8">
+					<dt>
+						<div class="dt relative justify-between max-820:flex-wrap">
+
+							<div class="dt">
+								<img src="../img/UX/icon_other.svg" alt="查詢條件">
+								<h3 class="h3">查詢條件</h3>
+							</div>
+
+						</div>
+					</dt>
+
+					<dd class="dd justify-between items-end">
+
+						<div>
+
+							<div class="flex max-1024:flex-wrap justify-between items-center">
+								<p class="shrink-0 mb-1 sm:mb-8 pr-10 font-bold">
+									查詢區間：
+									<span class="relative top-1 hidden max-1024:inline-block" data-tooltip="查詢區間的選擇，以動物登記日期為基準" data-flow="top">
+										<i class="material-icons text-grayDisabled">info</i>
+									</span>
+								</p>
+
+								
+								<div data-vue="ux-select-date" class="w-full">
+									<p class="hidden max-1024:inline-block">開始：</p>
+									<use-ux-select-date
+										target_input="txtSDATE"
+										input_name="txtSDATE"
+										default_input="txtSDATEdefault"
+									></use-ux-select-date>
+									<input type="hidden" id="txtSDATE" value="" />
+									<input type="hidden" id="txtSDATEdefault" value="2024/01/01" />
+								</div>
+
+								
+								<p class="mx-2 mb-8 max-1024:hidden">~</p>
+								
+								
+								<div data-vue="ux-select-date" class="w-full">
+									<p class="hidden max-1024:inline-block">結束：</p>
+									<use-ux-select-date
+										target_input="txtEDATE"
+										input_name="txtEDATE"
+										default_input="txtEDATEdefault"
+									></use-ux-select-date>
+									<input type="hidden" id="txtEDATE" value="" />
+									<input type="hidden" id="txtEDATEdefault" value="" />
+								</div>
+
+								
+								<p class="mb-10 ml-2 pt-3 max-1024:hidden" data-tooltip="查詢區間的選擇，以動物登記日期為基準" data-flow="top">
+									<i class="material-icons text-grayDisabled">info</i>
+								</p>
+
+							</div>
+
+							<div class="input-group">
+								<label class="pr-0">動物類別：</label>
+								<div class="input-radio">
+									<input type="radio" id="animal_dog" name="animal" value="0" v-model="Animal" />
+									<label for="animal_dog">狗</label>
+								</div>
+								<div class="input-radio">
+									<input type="radio" id="animal_cat" name="animal" value="1" v-model="Animal" />
+									<label for="animal_cat">貓</label>
+								</div>
+							</div>
+
+						</div>
+
+						<div class="mx-auto mt-3 lg:mt-0">
+							<a href="#" class="btn btn-main" v-on:click.prevent="PostData" data-event="前台_O302_查詢">查詢</a>
+						</div>
+
+					</dd>
+				</dl>
+			</div>
+		
+		</section>
+
+		
+		<section class="card-wrap mb-8 max-820:!px-4" v-if="!!CountyID && city.length > 0">
+			<div class="max-w-card-lg w-full">
+				<a class="btn btn-second btn-sm" href="" v-on:click.prevent="CountyID = ''" data-event="前台_O302_回全部縣市">
+					<i class="material-icons">reply</i>
+					回全部縣市
+				</a>
+			</div>
+		</section>
+
+		
+		<section class="card-wrap max-820:!px-0 w-full mb-8" v-if="resultData.length > 0">
+			
+			<div class="table-responsive sticky-th list-mobile">
+				<table class="table">
+					<thead>
+						<tr>
+							<th class="!text-center text-base">縣市</th>
+							<th class="!text-center text-base">登記<br>單位數</th>
+							<th class="!text-center text-base">登記數<br><span class="text-sm">(A)</span></th>
+							<th class="!text-center text-base">除戶數<br><span class="text-sm">(B)</span></th>
+							<th class="!text-center text-base">轉讓數<br><span class="text-sm">(C)</span></th>
+							<th class="!text-center text-base">變更數<br><span class="text-sm">(D)</span></th>
+							<th class="!text-center text-base">絕育數<br><span class="text-sm">(E)</span></th>
+							<th class="!text-center text-base">絕育除戶數<br><span class="text-sm">(F)</span></th>
+							<th class="!text-center text-base">免絕育數<br><span class="text-sm">(G)</span></th>
+							<th class="!text-center text-base">免絕育除戶數<br><span class="text-sm">(H)</span></th>
+							<th class="!text-center text-base">絕育率<br><span class="text-sm">(E-F)/(A-B)</span></th>
+							<th class="!text-center text-base">繁殖管理率<br><span class="text-sm">(E-F)+(G-H)/(A-B)</span></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-for="t in resultData">
+							<td class="!text-center" data-th="縣市">
+								<a
+									href="#" class="link-href"
+									v-if="t.AreaName !== '合計' && t.AreaName.length <= 3"
+									v-on:click.prevent="PostData({ CountyID: t.AreaID })"
+									data-event="前台_O302_進單一縣市" v-bind:data-item="t.AreaName">{{ t.AreaName }}</a>
+								<p v-else>{{ t.AreaName }}</p>
+							</td>
+							<td class="!text-center" data-th="登記單位數">{{ t.fld01 }}</td>
+							<td class="!text-center" data-th="登記數(A)">{{ t.fld02 }}</td>
+							<td class="!text-center" data-th="除戶數(B)">{{ t.fld03 }}</td>
+							<td class="!text-center" data-th="轉讓數(C)">{{ t.fld05 }}</td>
+							<td class="!text-center" data-th="變更數(D)">{{ t.fld06 }}</td>
+							<td class="!text-center" data-th="絕育數(E)">{{ t.fld04 }}</td>
+							<td class="!text-center" data-th="絕育除戶數(F)">{{ t.fld08 }}</td>
+							<td class="!text-center" data-th="免絕育數(G)">{{ t.fld07 }}</td>
+							<td class="!text-center" data-th="免絕育除戶數(H)">{{ t.fld10 }}</td>
+							<td class="!text-center" data-th="絕育率(E-F)/(A-B)">{{ t.j }}</td>
+							<td class="!text-center" data-th="繁殖管理率(E-F)+(G-H)/(A-B)">{{ t.k }}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+		</section>
+
+		
+		<section class="card-wrap max-768:!px-4" v-if="resultData.length > 0">
+			<ul class="list-square">
+				<li class="item">最後統計日：{{ Substandard }}</li>
+				<li class="item">查詢區間的選擇，以動物登記日期為基準</li>
+				<li class="item">登記數(A) 為飼主戶籍</li>
+				<li class="item">轉讓數(C) 為轉出飼主戶籍</li>
+				<li class="item">絕育數(E) 為查詢區間內登記且現已完成絕育數（即時更新）</li>
+				<li class="item">絕育率(E-F)/(A-B) 為查詢區間內登記且現已完成絕育之比例（即時更新）</li>
+			</ul>
+		</section>
+
+	</div>
+
+
+
+				
+				<footer id="footer-wrap" class="footer-wrap">
+					<div>
+						<div class="footer-1">
+							<h4>聯繫客服</h4>
+							<div>
+								<ul>
+									<li>系統諮詢時間：上班日 08:30~12:30、13:30~17:30</li>
+									<li>系統服務專線：02-23831698</li>
+									<li class="flex">系統線上客服： 
+										<a class="inline-block hover:underline mr-2 w-7" href="https://lin.ee/yhLmCfV" target="_blank" data-event="前台_LINE客服_Footer">
+											<img src="/img/Web2/icon_line_white.svg">
+										</a>
+									</li>
+									<li>瀏覽人數：<span id="lblcount"></span></li>
+									<li>建議使用 Edge、Firefox、Chrome 瀏覽器，最佳瀏覽解析度為 1920*1080</li>
+								</ul>
+								<div>
+									
+								</div>
+							</div>
+						</div>
+
+						<div class="footer-2">
+							<h4>網站圖片來源</h4>
+							<ul>
+								<li>新店動物之家</li>
+								<li>台中動物之家后里園區</li>
+								<li>壽山收容所（＠all_heart_taiwan）</li>
+								<li>彰化收容所（@odddog_）</li>
+								<li>Something Studio 三牲工作室</li>
+							</ul>
+						</div>
+
+						<div class="footer-3">
+							<h4>網站資源</h4>
+							<ul>
+								<li>
+									<span>輔導單位：</span>
+									<a href="https://www.moa.gov.tw/" target="_blank">
+										<img class="h-8" src="/img/logo_moa_white.svg?v=20230710" alt="農業部">
+									</a>
+								</li>
+								<li>
+									<span>執行單位：</span>
+									<a href="https://enrf.com.tw/" target="_blank">
+										<img class="w-28" src="/img/UX/logo_enrf2.svg" alt="沐訊科技股份有限公司">
+									</a>
+								</li>
+							</ul>
+							<p>&copy; 農業部 版權所有 2024 MOA All Rights Reserved.</p>
+						</div>
+					</div>
+				</footer>
+
+				
+				<aside id="ux-contact-top">
+					<use-ux-contact-top></use-ux-contact-top>
+				</aside>
+
+				
+				<aside class="LoadingImg" style="display: none;">
+					<img src="/images/loader.gif" />
+				</aside>
+				<aside class="LoadingImg1" style="display: none;">
+					<img src="/images/Spinner-1s-200px.gif" />
+				</aside>
+
+			</div>
+
+			
+			<div id="modal-login" class="sr-only">
+				<div class="mx-auto max-w-sm js-equal-label">
+
+					<div class="loginbox-header modal-header">
+						<h3 class="h3 text-center">登入後台</h3>
+					</div>
+
+					<div class="input-group">
+						<label for="txtUser">帳號</label>
+						<input type="text" id="txtUser" value="" placeholder="帳號" maxlength="10">
+					</div>
+					<p id="lblDBChkUid" class="input-helper"></p>
+
+					<div class="input-group !items-center">
+						<label for="txtUserPWD">密碼</label>
+						<input type="password" value="" id="txtUserPWD" placeholder="密碼" maxlength="30" />
+						<span class="inline-block ml-2 leading-none">
+							<i class="material-icons text-cancel cursor-pointer" id="lbUserPWD">visibility_off</i>
+						</span>
+					</div>
+					<p id="capLock" class="input-helper"></p>
+
+					<div class="input-group">
+						<label for="inputValue">驗證碼</label>
+						<input type="text" name="checknum" id="inputValue" maxlength="6" autocomplete="off" />
+						<img class="vImg sm:ml-4 mt-2 sm:mt-0" src="/handler/DynamicVerification.ashx" onclick="changeCode()" height="40" width="160" title="看不清楚？點擊刷新驗證碼" />
+					</div>
+
+					<div class="mb-4">
+						<p class="reciprocal"></p>
+					</div>
+
+					<div class="flex justify-between flex-wrap sm:flex-nowrap flex-col-reverse sm:flex-row">
+						<a href="#" class="js-forget-pw btn btn-second mt-4 sm:mt-0" data-event="前台_重設密碼">重設密碼</a>
+						<button type="button" id="btnLogin" class="btn btn-main">登入</button>
+					</div>
+
+				</div>
+			</div>
+
+			
+			<button type="button" class="modaal-psw hidden">開啟重設密碼燈用</button>
+			<div id="modal-psw" class="sr-only">
+				<div class="mx-auto max-w-sm js-equal-label">
+					<div class="modal-header">
+						<h3 class="h3 text-center">重設密碼</h3>
+					</div>
+					<div>
+						<div class="input-group">
+							<label>帳號</label>
+							<input type="text" id="logUserID" value="" placeholder="帳號">
+						</div>
+						<div class="input-group">
+							<label>電子信箱</label>
+							<input type="text" value="" id="logEmail" placeholder="電子信箱" />
+						</div>
+						<div class="mt-8 text-center">
+							<a href="#" id="btnSendMail" class="btn btn-main" data-event="前台_重設密碼_送出驗證信">送出驗證信</a>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			
+			<div id="vue-multi-verify-login" class="Web multi-verify-login">
+				<use-modal id="modal-feeder" size="max-w-6xl" :bottom_close="false">
+					<template v-slot:content>
+						<div class="flex justify-between flex-wrap sm:flex-nowrap mx-auto w-full">
+
+							
+							<section class="left Web">
+
+								<div class="chapter-title-icon !mb-4">
+									<h2 class="h3 w-full flex flex-col lg:flex-row flex-wrap md:flex-nowrap lg:flex-nowrap !items-center !pr-0 relative">
+										<div class="w-full flex flex-nowrap shrink">
+											<img src="../img/UX/icon_user.svg" alt="飼主登入">
+											<span class="relative top-1">飼主登入</span>
+										</div>
+										<div class="hint ml-8 pt-1.9 text-right">
+											<p class="!font-light text-sm text-opacity-80 whitespace-nowrap">目前僅限犬貓仍在養之飼主登入</p>									
+											<p class="text-warning text-base whitespace-nowrap">
+												無 Email 者請 <a class="underline" href="/Web/O301.aspx" target="_blank">親自至登記站</a> 現場更新
+											</p>
+										</div>
+									</h2>
+									
+								</div>
+
+								
+								<div class="input-group">
+									<label for="S_FdrBirDate_I">飼主生日</label>
+
+									<div class="w-full">
+										
+										<use-ux-select-date target_input="S_FdrBirDate_I"></use-ux-select-date>
+										<input type="hidden" id="S_FdrBirDate_I" value="" />
+									</div>
+								</div>
+
+								
+								<div class="input-group">
+									<label for="S_FdrID_I">飼主證號</label>
+									<input
+										type="text" id="S_FdrID_I" maxlength="15"
+										class="uppercase"
+										placeholder="身份證 / 居留證 / 護照號碼"
+										value="" />
+								</div>
+								<p id="helper-fdrIDI" class="input-helper"></p>
+
+								<div class="input-group">
+									<label for="inputFdrValue" class="w-28">驗證碼</label>
+									<input
+									  class="firstInputFdrValueI"
+										type="text" inputmode="numeric" autocomplete="off"
+										maxlength="6"
+										v-model.trim="config.uid.code"
+										@keyup.enter="loginFeederId" />
+									<img class="vImg sm:ml-4 mt-2 sm:mt-0" src="/handler/DynamicVerification.ashx" onclick="changeCode()" height="40" width="160" title="看不清楚？點擊刷新驗證碼" />
+								</div>
+								<p class="input-helper text-right" v-if="helper.uid.code.length > 0">{{ helper.uid.code }}</p>
+
+								<!-- 驗證碼倒數訊息 -->
+								<div class="input-group !py-0 h-10">
+									<label class="w-28"></label>
+									<p class="reciprocal text-sm"></p>
+								</div>
+
+								
+								<div id="divFidoI">
+									<div v-show="count > 0">
+										<use-ux-fido-verify
+											ref="fido_fdr"
+											id_input="S_FdrID_I"
+											target_input="fido_fdr_result"
+											@update_count="updateCountDown"
+											@update_error="updateError">
+										</use-ux-fido-verify>
+										<input id="fido_fdr_result" type="hidden" @change="getFidoResult">
+									</div>
+								</div>
+
+								
+								<div id="divCaptchaI" class="!hidden mt-8">
+									<div class="chapter-title-icon">
+										<h2 class="h3">
+											<img src="../img/UX/icon_user.svg" alt="驗證碼已寄至以下 Email，請於 5 分鐘內輸入，300 秒後失效。">
+											<span>驗證碼已寄至以下 Email，請於 5 分鐘內輸入，<span id="countdownI" class="pr-1"></span> 秒後失效。</span>
+										</h2>
+									</div>
+
+									
+									<div class="input-group">
+										<label>信箱</label>
+										<p id="lbCaptchaEmailI" class="sm:pl-5"></p>
+									</div>
+									<p id="lbCaptchaEmailIHelper" class="input-helper">※請務必依照國民身份證戶籍地址填寫</p>
+
+									
+									<div id="divInputCaptchaI" class="input-group">
+										<label for="txtCaptchaI">驗證碼</label>
+										<input
+											type="text" id="txtCaptchaI" name="txtCaptchaI"
+											inputmode="numeric" maxlength="6"
+											placeholder="請輸入信箱中的驗證碼"
+											value="" />
+										<div class="shrink-0 sm:ml-4 mt-2 sm:mt-0 w-full sm:w-auto">
+											<button type="button" id="btnCaptchaI" class="btn btn-second btn-sm" data-event="前台_O201_確認驗證碼">確認驗證碼</button>
+										</div>
+									</div>
+									<input type="hidden" id="hiddenCI" value="" />
+									<div id="msgI" class="input-helper"></div>
+								</div>
+
+								
+								<div id="fidoNoEmailI" class="!hidden">
+									<hr/>
+									<p class="my-4">※ 尚未登錄 Email</p>
+									<p class="input-helper mb-4">
+										1. 請 <a class="link-href" href="/Web/O301.aspx" data-tooltip="前往查看登記站資訊" data-flow="bottom">親自至登記站現場</a> 更新飼主 Email 資料<br>
+										2. 加入 <a class="link-href" href="https://lin.ee/yhLmCfV" target="_blank" data-tooltip="點擊加入官方line" data-flow="bottom">Line@</a> 並提供身分證正面照以及 Email 可線上新增
+									</p>
+									<hr/>
+								</div>
+
+								
+								<div id="temp-userI" class="!hidden">
+									<div class="input-group">
+										<label>名下寵物數量（含除戶）</label>
+										<p id="lbl_PetCountI"></p>
+									</div>
+									<div class="input-group">
+										<label>違反動物保護法資料</label>
+										<p id="lbl_blackNoticeI"></p>
+									</div>
+								</div>
+
+								
+								<div class="flex justify-center flex-wrap flex-col-reverse sm:flex-nowrap sm:flex-row mt-4 sm:my-8">
+									<button type="button" id="FdrSearchFidoI" class="btn btn-second mx-2 mb-2 sm:mb-0" data-event="飼主登入_行動自然人憑證">行動自然人憑證</button>
+									<button type="button" id="FdrSearchI" class="btn btn-main mx-2 mb-2 sm:mb-0" data-event="飼主登入_Email信箱驗證">Email 信箱驗證</button>
+								</div>
+
+							</section>
+
+							
+							<aside class="right Web">
+
+								<div class="on-top text-center">
+									<img class="mx-auto mb-2" src="/img/UX/logo_UX.svg" width="44" height="42" alt="寵物登記管理資訊網">
+									<div class="text-white">
+										<h4 class="p font-bold">寵物登記管理資訊網</h4>
+										<p class="text-sm">Pet Registration Information System</p>
+									</div>
+								</div>
+								
+								<div class="on-bottom">
+
+									<Transition mode="out-in" name="fade">
+
+										
+										<div v-if="verifyType === 'uid'" key="accountLink">
+                      
+                      <div class="chapter-title-line mb-2 text-white">
+												<h4 class="p bg-btn font-bold">關於飼主登入</h4>
+											</div>
+											<ul class="list-square">
+												<li class="item">
+													<a href="../EnrfWsData/manual/飼主登入操作手冊.pdf" target="_blank">操作手冊</a>
+												</li>
+												<li class="item">												
+													<a href="https://line.me/R/ti/p/%40266wmmeh" target="_blank">如有登入問題可以加入LINE詢問</a>													
+												</li>
+											</ul>
+
+											<div class="chapter-title-line mb-2 mt-4 text-white">
+												<h4 class="p bg-btn font-bold">關於自然人憑證</h4>
+											</div>
+											<ul class="list-square">
+												<li class="item">
+													<a href="https://fido.moi.gov.tw/" target="_blank">如何使用自然人憑證註冊？</a>
+												</li>
+												<li class="item">
+													<a href="https://fido.moi.gov.tw/pt/main/teaching" target="_blank">如何使用行動身分識別？</a>
+												</li>
+												<li class="item">
+													<a href="https://fido.moi.gov.tw/pt/main/qa" target="_blank">有其他使用問題？</a>
+												</li>
+											</ul>
+
+										</div>
+
+									</Transition>
+
+								</div>
+							
+							</aside>
+
+						</div>
+					</template>
+				</use-modal>
+			</div>
+
+			
+			<div id="modal-search" class="hidden">
+				<div class="mx-auto">
+
+					<div class="modal-header">
+						<h3 class="mb-4 h3 text-center">全站搜尋</h3>
+					</div>
+
+					<div id="ux-front-search">
+						<use-ux-front-search></use-ux-front-search>
+					</div>
+
+				</div>
+			</div>
+
+			
+			
+			
+			<script src="../js/jquery-3.7.0.min.js"></script>
+
+			
+			<script src="../js/core/vue.global.prod.min.js"></script>
+
+			
+			<script src="../js/plugins/ga4_event.js?v=20241105"></script>
+
+			
+			<script src="../js/plugins/qrcode.min.js"></script>
+
+			<script src="../js/common.js?v1"></script>
+			<script src="../js/enumFormat.js"></script>
+			<script src="../js/classFormat.js?v=20241105"></script>
+			<script src="../js/Utilities.js"></script>
+			<script src="../js/Business.js?v=20241105"></script>
+			<script src="../js/jquery.capslockstate.js"></script>
+			<script src="../js/session.js"></script>
+			<script src="../js/base64.js"></script>
+			<script src="../js/sweetalert2.min.js"></script>
+
+			
+			<script src="../js/plugins/vue-uxMultiVerifyLogin.min.js?v=20241105"></script>
+			
+			
+			<script src="../js/Web2/FeederLogin.min.js?v=20241105"></script>
+
+			
+    
+	<script src="../js/Web/O302_UX.min.js?v=20241105"></script>
+	
+	
+	<script src="../js/plugins/vue-uxRoundSlider.min.js?v=20241105"></script>
+
+  
+	<script src="../js/plugins/vue-uxSelectDate.min.js?v=20241105"></script>
+
+
+
+			
+			<script src="../js/plugins/modaal.min.js"></script>
+
+			
+			<script src="../js/plugins/slick.min.js"></script>
+
+			
+			<script src="../js/plugins/vue-uxContactTop.min.js"></script>
+
+			
+			<script src="../js/plugins/vue-uxFrontSearch.min.js"></script>
+
+			
+			<script src="../js/plugins/uxEqualLabel.min.js?v=20241105"></script>
+
+			
+			<script src="../js/Web/MasterPageUX.js?v=20241105"></script>
+
+		</form>
+	</body>
+</html>
