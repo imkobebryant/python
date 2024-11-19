@@ -1,3 +1,6 @@
 requests
 ttkthemes
 Pillow
+tkintermapview
+item_dialog
+pandas

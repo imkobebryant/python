@@ -1,5 +1,11 @@
 import requests
 import sqlite3
+import os
+from dotenv import load_dotenv
+from pandas import DataFrame
+import pandas as pd
+load_dotenv()
+
 def get_sitename(county:str)->list[str]:
     '''
     docString
@@ -72,10 +78,31 @@ def get_selected_data(sitename:str)->list[list]:
         sitename_list = [list(item) for item in cursor.fetchall()]
         return sitename_list
     
+def get_plot_data(sitename:str)->DataFrame:
+    conn = sqlite3.connect("AQI.db")
+    with conn:
+        cursor = conn.cursor()        
+        sql = '''
+        SELECT date,aqi,pm25
+        FROM records
+        WHERE sitename = ?; 
+        '''
+        cursor.execute(sql,(sitename,))
+        data_list = []
+        for item in cursor.fetchall():
+            date = item[0]
+            aqi = item[1]
+            pm25 = item[2]
+            data_list.append({'date':date,'aqi':aqi,'pm25':pm25})
+        df = pd.DataFrame(data_list)
+        df['date'] = pd.to_datetime(df['date'])
+        df1 = df.set_index('date')
+        return df1
+
 def download_data():
     print("重新下載資料")
     conn = sqlite3.connect("AQI.db")
-    url = 'https://data.moenv.gov.tw/api/v2/aqx_p_488?api_key=e8dd42e6-9b8b-43f8-991e-b3dee723a52d&limit=1000&sort=datacreationdate%20desc&format=JSON'
+    url = f'https://data.moenv.gov.tw/api/v2/aqx_p_488?api_key={os.environ["API_KEY"]}&limit=1000&sort=datacreationdate%20desc&format=JSON'
     try:
         response = requests.get(url)
         response.raise_for_status()
