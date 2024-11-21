@@ -4,12 +4,75 @@ from ttkthemes import ThemedTk
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from pet_datasource import PetDataSource
+import json
+import numpy as np
+import tkintermapview
 
+class TaiwanMap(ttk.Frame):
+    def __init__(self, master):
+        super().__init__(master)
+        
+        # 創建地圖元件
+        self.map_view = tkintermapview.TkinterMapView(self, width=300, height=400, corner_radius=0)
+        self.map_view.pack(fill='both', expand=True)
+        
+        # 設置地圖中心和縮放等級
+        self.map_view.set_position(23.6, 121.0) # 台灣大致中心
+        self.map_view.set_zoom(8)
+        
+        # 添加標記
+        self.county_markers = {}
+        self.add_county_markers()
+        
+    def add_county_markers(self):
+        # 在地圖上添加每個縣市的標記
+        counties = [
+            ("臺北市", 25.033, 121.565),
+            ("新北市", 24.983, 121.467),
+            ("桃園市", 24.99, 121.302),
+            ("臺中市", 24.143, 120.679),
+            ("臺南市", 22.99, 120.209),
+            ("高雄市", 22.62, 120.308),
+            ("基隆市", 25.133, 121.733),
+            ("新竹市", 24.8, 120.967),
+            ("新竹縣", 24.833, 121.033),
+            ("苗栗縣", 24.567, 120.817),
+            ("彰化縣", 24.083, 120.517),
+            ("南投縣", 23.917, 120.683),
+            ("雲林縣", 23.75, 120.533),
+            ("嘉義市", 23.483, 120.45),
+            ("嘉義縣", 23.5, 120.3),
+            ("屏東縣", 22.683, 120.483),
+            ("臺東縣", 22.75, 121.15),
+            ("花蓮縣", 23.983, 121.6),
+            ("宜蘭縣", 24.767, 121.75),
+            ("澎湖縣", 23.567, 119.567),
+            ("金門縣", 24.433, 118.317),
+            ("連江縣", 26.15, 119.95)
+        ]
+        
+        for county, lat, lon in counties:
+            marker = self.map_view.set_marker(lat, lon, text=county)
+            self.county_markers[county] = marker
+            
+    def highlight_county(self, county):
+    # 高亮顯示選中的縣市
+        if county in self.county_markers:
+            self.county_markers[county].set_text("🔴 " + county)
+            self.county_markers[county].set_icon_image("red_circle")
+        
+        # 重置其他縣市標記
+        for other_county, marker in self.county_markers.items():
+            if other_county != county:
+                marker.set_text(other_county)
+                marker.set_icon_image("black_circle")
+
+    
 class PetAnalysisWindow(ThemedTk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.title('寵物登記與絕育分析')
-        self.geometry('1400x900')  # 增加視窗大小以容納更多資訊
+        self.geometry('1400x900')
         self.datasource = PetDataSource()
         
         # 設定中文字型
@@ -27,9 +90,9 @@ class PetAnalysisWindow(ThemedTk):
 
     def on_closing(self):
         """處理視窗關閉事件"""
-        plt.close('all')  # 關閉所有matplotlib圖表
-        self.quit()  # 結束mainloop
-        self.destroy()  # 銷毀視窗
+        plt.close('all')
+        self.quit()
+        self.destroy()
         
     def _create_widgets(self):
         # Top Frame
@@ -41,24 +104,13 @@ class PetAnalysisWindow(ThemedTk):
         main_frame = ttk.Frame(self)
         main_frame.pack(fill='both', expand=True, padx=10, pady=10)
         
-        # Left Frame for Controls
+        # Left Frame for Controls and Map
         left_frame = ttk.Frame(main_frame)
         left_frame.pack(side='left', fill='y', padx=10)
         
         # Selector Frame
-        selector_frame = ttk.LabelFrame(left_frame, text="資料選擇", padding=10)
+        selector_frame = ttk.LabelFrame(left_frame, text="選擇縣市", padding=5)
         selector_frame.pack(fill='x', pady=5)
-        
-        # Year Combobox
-        years = self.datasource.get_years()
-        self.selected_year = tk.StringVar()
-        year_frame = ttk.Frame(selector_frame)
-        year_frame.pack(fill='x', pady=5)
-        ttk.Label(year_frame, text="年份:").pack(side='left')
-        year_cb = ttk.Combobox(year_frame, textvariable=self.selected_year, values=years, state='readonly')
-        self.selected_year.set(years[0])
-        year_cb.pack(side='left', padx=5)
-        year_cb.bind('<<ComboboxSelected>>', self.update_data)
         
         # County Combobox
         counties = self.datasource.get_counties()
@@ -66,10 +118,16 @@ class PetAnalysisWindow(ThemedTk):
         county_frame = ttk.Frame(selector_frame)
         county_frame.pack(fill='x', pady=5)
         ttk.Label(county_frame, text="縣市:").pack(side='left')
-        county_cb = ttk.Combobox(county_frame, textvariable=self.selected_county, values=counties, state='readonly')
+        county_cb = ttk.Combobox(county_frame, textvariable=self.selected_county, values=counties, state='readonly', width=15)
         self.selected_county.set(counties[0])
         county_cb.pack(side='left', padx=5)
-        county_cb.bind('<<ComboboxSelected>>', self.update_data)
+        
+        # 在左下角添加台灣地圖
+        self.taiwan_map = TaiwanMap(left_frame)
+        self.taiwan_map.pack(side='bottom', fill='both', expand=True, pady=10)
+        
+        # 綁定選擇事件
+        self.selected_county.trace('w', self._on_county_selected)
         
         # Right Frame for Data Display
         right_frame = ttk.Frame(main_frame)
@@ -105,6 +163,12 @@ class PetAnalysisWindow(ThemedTk):
         
         self.update_data()
         
+    def _on_county_selected(self, *args):
+        """當選擇縣市時更新地圖和數據"""
+        selected = self.selected_county.get()
+        self.taiwan_map.highlight_county(selected)
+        self.update_data()
+        
     def update_data(self, event=None):
         # Clear existing data
         for item in self.tree.get_children():
@@ -125,11 +189,11 @@ class PetAnalysisWindow(ThemedTk):
                 widget.destroy()
             
             # 創建新圖表，調整大小和內邊距
-            fig = plt.figure(figsize=(14, 10))  # 加大圖表高度
+            fig = plt.figure(figsize=(14, 10))
             
             # 創建子圖，調整間距
             gs = plt.GridSpec(2, 2, height_ratios=[1.5, 1])
-            gs.update(hspace=0.8, wspace=0.3)  # 增加子圖之間的垂直間距
+            gs.update(hspace=0.8, wspace=0.3)
             
             # Get data for selected county
             county_data = self.datasource.get_county_data(self.selected_county.get())
@@ -149,7 +213,6 @@ class PetAnalysisWindow(ThemedTk):
             ax1.grid(True, linestyle='--', alpha=0.7)
             ax1.legend(loc='upper right')
             
-            # 調整x軸標籤角度和位置
             plt.setp(ax1.xaxis.get_majorticklabels(), rotation=45, ha='right')
             
             # 2. Neutering Rate Trend
@@ -171,7 +234,6 @@ class PetAnalysisWindow(ThemedTk):
             ax3.grid(True, linestyle='--', alpha=0.7)
             plt.setp(ax3.xaxis.get_majorticklabels(), rotation=45, ha='right')
             
-            # 調整整體布局，給標題和x軸標籤預留更多空間
             fig.subplots_adjust(left=0.1, right=0.95, bottom=0.2, top=0.95)
             
             # Embed chart in window
