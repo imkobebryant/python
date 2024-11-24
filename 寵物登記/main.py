@@ -2,15 +2,20 @@ import tkinter as tk
 from tkinter import ttk
 from ttkthemes import ThemedTk
 from src.ui.analysis_view import AnalysisView
-from src.data.data_source import DataManager
+from src.data.data_source import PetDataManager
 
 class MainWindow(ThemedTk):
+    """主視窗類別"""
     def __init__(self):
+        """初始化主視窗"""
         super().__init__(theme="arc")
         self.title('寵物登記與絕育分析')
-        self.geometry('1400x900')
+        self.geometry('1300x720')
         
-        self.data_manager = DataManager()
+        # 初始化資料管理器
+        self.data_manager = PetDataManager()
+        
+        # 建立主視圖
         self.view = AnalysisView(self, self.data_manager)
         self.view.pack(fill='both', expand=True)
         
@@ -31,6 +36,7 @@ class MainWindow(ThemedTk):
         self.destroy()
 
 def main():
+    """程式進入點"""
     app = MainWindow()
     app.mainloop()
 
