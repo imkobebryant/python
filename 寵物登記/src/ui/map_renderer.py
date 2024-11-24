@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-from typing import Callable, Optional
+from typing import Callable, Dict, Optional
 import tkintermapview
 
 class TaiwanMapRenderer(ttk.Frame):
@@ -20,24 +20,6 @@ class TaiwanMapRenderer(ttk.Frame):
         self.on_county_select: Optional[Callable[[str], None]] = None
         
         # 初始化地圖元件
-        self._setup_map(height)
-        
-        # 建立縣市標記
-        self.markers = {}
-        self._create_markers()
-        
-        # 初始化選擇狀態
-        self.selected_county = None
-        self.selected_marker = None
-        
-    def _setup_map(self, height: int):
-        """
-        設定地圖基本屬性
-        
-        Args:
-            height: 地圖高度
-        """
-        # 建立地圖元件
         self.map_widget = tkintermapview.TkinterMapView(self, width=400, height=height)
         self.map_widget.pack(fill="both", expand=True)
         
@@ -47,10 +29,18 @@ class TaiwanMapRenderer(ttk.Frame):
             max_zoom=19
         )
         
-        # 設定初始位置和縮放級別
-        self.map_widget.set_position(23.97565, 120.973882)  # 台灣中心位置
-        self.map_widget.set_zoom(7)  # 適合台灣全圖的縮放級別
-
+        # 設定初始位置和縮放級別 (台灣中心點)
+        self.map_widget.set_position(23.97565, 120.973882)
+        self.map_widget.set_zoom(7)
+        
+        # 初始化標記相關屬性
+        self.markers = {}
+        self.selected_county = None
+        self.selected_marker = None
+        
+        # 建立縣市標記
+        self._create_markers()
+        
     def _create_markers(self):
         """建立所有縣市的地圖標記"""
         # 定義縣市座標
@@ -105,6 +95,22 @@ class TaiwanMapRenderer(ttk.Frame):
         Args:
             county_name: 縣市名稱
         """
+        # 處理全臺的情況
+        if county_name == "全臺":
+            # 清除上一個選擇的標記
+            if self.selected_marker:
+                self.selected_marker.set_text(self.selected_county)
+            
+            # 重置選擇狀態
+            self.selected_marker = None
+            self.selected_county = None
+            
+            # 設定地圖顯示全臺灣的視角
+            self.map_widget.set_position(23.97565, 120.973882)
+            self.map_widget.set_zoom(7)
+            return
+        
+        # 處理其他縣市的情況
         if county_name not in self.markers:
             return
             
@@ -126,3 +132,18 @@ class TaiwanMapRenderer(ttk.Frame):
         # 更新選擇狀態
         self.selected_county = county_name
         self.selected_marker = marker
+        
+    def destroy(self):
+        """清理資源"""
+        # 清除所有標記
+        for marker in self.markers.values():
+            marker.delete()
+        
+        # 清空標記字典
+        self.markers.clear()
+        
+        # 刪除地圖元件
+        self.map_widget.destroy()
+        
+        # 呼叫父類的 destroy
+        super().destroy()

@@ -32,8 +32,11 @@ class AnalysisView(ttk.Frame):
         # 初始化UI元件
         self._initialize_ui()
         
-        # 設定定期更新
-        self.after(100, self._update_display)
+        # 設定預設縣市為全臺
+        self._current_county = "全臺"
+        
+        # 立即更新顯示 (不使用after延遲)
+        self._update_display()
         
     def _setup_chart(self):
         """設定圖表布局"""
@@ -60,9 +63,6 @@ class AnalysisView(ttk.Frame):
         # 建立右側面板 (資料表格與圖表)
         self._create_right_panel()
         
-        # 初始化資料
-        self._current_county = None
-        
         # 綁定事件處理
         self.selected_county.trace('w', lambda *args: self.after(10, self._on_county_selected))
         self.map_renderer.on_county_select = self._on_map_county_selected
@@ -81,7 +81,8 @@ class AnalysisView(ttk.Frame):
         
         ttk.Label(county_frame, text="縣市:").pack(side='left')
         
-        self.selected_county = tk.StringVar()
+        # 設定預設值為全臺
+        self.selected_county = tk.StringVar(value="全臺")
         self.county_cb = ttk.Combobox(
             county_frame,
             textvariable=self.selected_county,
@@ -90,7 +91,9 @@ class AnalysisView(ttk.Frame):
             width=15
         )
         self.county_cb.pack(side='left', padx=5)
-        self.selected_county.set(self.data_manager.counties[0])
+        
+        # 選擇第一個項目 (全臺)
+        self.county_cb.current(0)
         
         # 建立地圖
         map_frame = ttk.LabelFrame(left_frame, text="台灣地圖", padding=5)
@@ -142,7 +145,7 @@ class AnalysisView(ttk.Frame):
         self.canvas.get_tk_widget().pack(fill='both', expand=True)
         
     def _on_county_selected(self):
-        """處理縣市選擇事件 (優化效能)"""
+        """處理縣市選擇事件"""
         with self._update_lock:
             selected = self.selected_county.get()
             if selected != self._current_county:
@@ -157,7 +160,7 @@ class AnalysisView(ttk.Frame):
             self.selected_county.set(county)
             
     def _update_display(self):
-        """更新顯示內容 (優化效能)"""
+        """更新顯示內容"""
         if not self._current_county:
             return
             
@@ -198,7 +201,8 @@ class AnalysisView(ttk.Frame):
         ax.plot(years, deregistrations, 'ro-', label='註銷數', linewidth=2)
         
         # 設定圖表標題和標籤
-        ax.set_title(f'{stats.county} 寵物登記與註銷趨勢')
+        title = '全臺寵物登記與註銷趨勢' if stats.county == '全臺' else f'{stats.county} 寵物登記與註銷趨勢'
+        ax.set_title(title)
         ax.set_xlabel('年份')
         ax.set_ylabel('數量')
         ax.legend()
@@ -224,7 +228,10 @@ class AnalysisView(ttk.Frame):
         ax_rate = self.axes['rate']
         ax_rate.clear()
         ax_rate.plot(years, neutering_rates, 'go-', linewidth=2)
-        ax_rate.set_title(f'{stats.county} 絕育率趨勢')
+        
+        # 設定絕育率圖標題
+        title = '全臺絕育率趨勢' if stats.county == '全臺' else f'{stats.county} 絕育率趨勢'
+        ax_rate.set_title(title)
         ax_rate.set_xlabel('年份')
         ax_rate.set_ylabel('絕育率 (%)')
         ax_rate.grid(True)
@@ -235,7 +242,10 @@ class AnalysisView(ttk.Frame):
         ax_ratio.clear()
         ratio = np.divide(neutered, registrations) * 100
         ax_ratio.plot(years, ratio, 'mo-', linewidth=2)
-        ax_ratio.set_title(f'{stats.county} 絕育數與登記數比率')
+        
+        # 設定比率圖標題
+        title = '全臺絕育數與登記數比率' if stats.county == '全臺' else f'{stats.county} 絕育數與登記數比率'
+        ax_ratio.set_title(title)
         ax_ratio.set_xlabel('年份')
         ax_ratio.set_ylabel('比率 (%)')
         ax_ratio.grid(True)
