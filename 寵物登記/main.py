@@ -27,16 +27,20 @@ class MainWindow(ThemedTk):
         
     def on_closing(self):
         """處理視窗關閉事件,確保資源正確釋放"""
-        # 停止地圖更新
-        if hasattr(self.view.map_renderer.map_widget, "after_id"):
-            self.after_cancel(self.view.map_renderer.map_widget.after_id)
-        
-        # 清理地圖資源    
-        self.view.map_renderer.map_widget.destroy()
-        
-        # 關閉視窗
-        self.quit()
-        self.destroy()
+        try:
+            # 先停止所有更新
+            if hasattr(self.view.map_renderer.map_widget, "after_id"):
+                self.after_cancel(self.view.map_renderer.map_widget.after_id)
+            
+            # 清理地圖資源    
+            if hasattr(self.view.map_renderer, "map_widget"):
+                self.view.map_renderer.clear_markers()
+                self.view.map_renderer.map_widget.destroy()
+            
+            # 關閉視窗
+            self.quit()
+        finally:
+            self.destroy()
 
 def main():
     """程式進入點"""

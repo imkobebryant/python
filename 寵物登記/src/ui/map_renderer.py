@@ -132,18 +132,35 @@ class TaiwanMapRenderer(ttk.Frame):
         # 更新選擇狀態
         self.selected_county = county_name
         self.selected_marker = marker
-        
+    def clear_markers(self):
+        """清除所有地圖標記"""
+        try:
+            # 安全地清除所有標記
+            for marker in list(self.markers.values()):
+                try:
+                    if marker and hasattr(marker, 'delete'):
+                        marker.delete()
+                except Exception:
+                    pass
+            self.markers.clear()
+        except Exception:
+            pass
+
     def destroy(self):
         """清理資源"""
-        # 清除所有標記
-        for marker in self.markers.values():
-            marker.delete()
-        
-        # 清空標記字典
-        self.markers.clear()
-        
-        # 刪除地圖元件
-        self.map_widget.destroy()
-        
-        # 呼叫父類的 destroy
-        super().destroy()
+        try:
+            # 清除標記
+            self.clear_markers()
+            
+            # 清除地圖元件
+            if hasattr(self, 'map_widget'):
+                self.map_widget.destroy()
+                
+        except Exception:
+            pass
+            
+        # 最後調用父類的destroy
+        try:
+            super().destroy()
+        except Exception:
+            pass
