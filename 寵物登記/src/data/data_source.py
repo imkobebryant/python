@@ -5,7 +5,7 @@ class DataManager:
         self._load_pet_data()
 
     def _load_pet_data(self):
-        df = pd.read_csv('2024-2014pet_data.csv')
+        df = pd.read_csv('2023-2009pet_data.csv')
         df = df[df['County'] != '全臺']
         
         self.pet_data = {}

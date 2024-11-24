@@ -12,6 +12,7 @@ class TaiwanMapRenderer(ttk.Frame):
         self.map_widget = tkintermapview.TkinterMapView(self, width=400, height=height)
         self.map_widget.pack(fill="both", expand=True)
         
+        # 使用國土測繪中心圖資
         self.map_widget.set_tile_server("https://wmts.nlsc.gov.tw/wmts/EMAP/default/EPSG:3857/{z}/{y}/{x}", max_zoom=19)
         self.map_widget.set_position(23.97565, 120.973882)
         self.map_widget.set_zoom(7)
