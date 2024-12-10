@@ -4,6 +4,7 @@ import xgboost as xgb
 from sklearn.metrics import mean_absolute_percentage_error, mean_squared_error
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 
 # 設定中文字型
 plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei', 'Arial Unicode MS', 'SimHei']
@@ -130,17 +131,38 @@ def predict_2025(model, scaler, last_data, features):
     return predictions
 
 def plot_results(actual, predicted, title):
-    plt.figure(figsize=(12, 6))
-    plt.plot(range(len(actual)), actual, label='實際值', color='blue')
-    plt.plot(range(len(predicted)), predicted, label='預測值', color='orange')
-    plt.title(title, fontsize=12)
-    plt.xlabel('時間', fontsize=10)
-    plt.ylabel('寵物登記數', fontsize=10)
-    plt.legend(prop={'size': 10})
-    plt.grid(True)
-    plt.xticks(fontsize=9)
-    plt.yticks(fontsize=9)
+    plt.figure(figsize=(15, 7))
+    
+    # 生成時間索引
+    dates = pd.date_range(start='2015-1-1', periods=len(actual), freq='M')
+    
+    # 繪製實際值和預測值
+    plt.plot(dates, actual, label='實際值', color='blue', linewidth=2)
+    plt.plot(dates, predicted, label='預測值', color='orange', linewidth=2)
+    
+    # 設置標題和標籤
+    plt.title(title, fontsize=14, pad=15)
+    plt.xlabel('年月', fontsize=12)
+    plt.ylabel('寵物登記數', fontsize=12)
+    
+    # 設置圖例
+    plt.legend(prop={'size': 12}, loc='upper left')
+    
+    # 添加網格
+    plt.grid(True, linestyle='--', alpha=0.7)
+    
+    # 設置x軸刻度
+    plt.gcf().autofmt_xdate()  # 自動調整日期標籤的角度
+    plt.gca().xaxis.set_major_locator(mdates.YearLocator())  # 主刻度為年
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y'))  # 主刻度格式
+    plt.gca().xaxis.set_minor_locator(mdates.MonthLocator())  # 次刻度為月
+    
+    # 設置y軸範圍，使用千分位格式
+    plt.gca().yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: format(int(x), ',')))
+    
+    # 調整邊距
     plt.tight_layout()
+    
     plt.show()
 
 def main():

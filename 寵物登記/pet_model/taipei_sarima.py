@@ -3,12 +3,7 @@ import numpy as np
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from sklearn.metrics import mean_absolute_percentage_error, mean_squared_error
 import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
-from statsmodels.tsa.statespace.sarimax import SARIMAX
-from sklearn.metrics import mean_absolute_percentage_error, mean_squared_error
-import matplotlib.pyplot as plt
-import matplotlib as mpl
+import matplotlib.dates as mdates
 
 # 設定中文字型
 plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei', 'Arial Unicode MS', 'SimHei']
@@ -24,7 +19,6 @@ PARAMS = {
 }
 
 def prepare_data():
-    # 讀取數據，使用適當的編碼
     try:
         # 嘗試不同的編碼方式
         encodings = ['utf-8', 'big5', 'cp950', 'gb18030']
@@ -57,6 +51,8 @@ def prepare_data():
         
     except Exception as e:
         print(f"讀取檔案時發生錯誤: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
         raise
 
 def train_model(data):
@@ -93,20 +89,36 @@ def predict_2025(model):
     return predictions, conf_int
 
 def plot_results(actual, predicted, title):
-    plt.figure(figsize=(12, 6))
-    plt.plot(range(len(actual)), actual, label='實際值', color='blue')
-    plt.plot(range(len(predicted)), predicted, label='預測值', color='orange')
-    plt.title(title, fontsize=12)
-    plt.xlabel('時間', fontsize=10)
-    plt.ylabel('寵物登記數', fontsize=10)
-    plt.legend(prop={'size': 10})
-    plt.grid(True)
+    plt.figure(figsize=(15, 7))
     
-    # 設定更大的字體大小
-    plt.xticks(fontsize=9)
-    plt.yticks(fontsize=9)
+    # 生成時間索引
+    dates = pd.date_range(start='2015-1-1', periods=len(actual), freq='M')
     
-    # 調整圖表邊距
+    # 繪製實際值和預測值
+    plt.plot(dates, actual, label='實際值', color='blue', linewidth=2)
+    plt.plot(dates, predicted, label='預測值', color='orange', linewidth=2)
+    
+    # 設置標題和標籤
+    plt.title(title, fontsize=14, pad=15)
+    plt.xlabel('年月', fontsize=12)
+    plt.ylabel('寵物登記數', fontsize=12)
+    
+    # 設置圖例
+    plt.legend(prop={'size': 12}, loc='upper left')
+    
+    # 添加網格
+    plt.grid(True, linestyle='--', alpha=0.7)
+    
+    # 設置x軸刻度
+    plt.gcf().autofmt_xdate()  # 自動調整日期標籤的角度
+    plt.gca().xaxis.set_major_locator(mdates.YearLocator())  # 主刻度為年
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y'))  # 主刻度格式
+    plt.gca().xaxis.set_minor_locator(mdates.MonthLocator())  # 次刻度為月
+    
+    # 設置y軸範圍
+    plt.gca().yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: format(int(x), ',')))
+    
+    # 調整邊距
     plt.tight_layout()
     
     plt.show()
@@ -114,31 +126,40 @@ def plot_results(actual, predicted, title):
 def main():
     print("開始分析台北市寵物登記數據...")
     
-    # 準備數據
-    taipei_df, budget_df = prepare_data()
-    
-    # 訓練模型
-    model, predictions, actual, mape, rmse = train_model(taipei_df)
-    
-    # 顯示模型性能
-    print("\n模型性能指標：")
-    print(f"MAPE (平均絕對百分比誤差): {mape:.2%}")
-    print(f"RMSE (均方根誤差): {rmse:.2f}")
-    print(f"平均每月預測誤差範圍: ±{rmse:.0f}個登記數")
-    
-    # 預測2025年數據
-    predictions_2025, conf_int = predict_2025(model)
-    
-    print("\n2025年預測結果：")
-    for month, pred in enumerate(predictions_2025, 1):
-        print(f"2025年{month}月預測登記數: {pred:.0f}")
-    
-    # 繪製結果圖表
-    plot_results(actual, predictions, "台北市寵物登記數預測結果")
-    
-    # 顯示模型摘要
-    print("\n模型詳細資訊：")
-    print(model.summary())
+    try:
+        # 準備數據
+        taipei_df, budget_df = prepare_data()
+        
+        # 訓練模型
+        print("\n訓練模型中...")
+        model, predictions, actual, mape, rmse = train_model(taipei_df)
+        
+        # 顯示模型性能
+        print("\n模型性能指標：")
+        print(f"MAPE (平均絕對百分比誤差): {mape:.2%}")
+        print(f"RMSE (均方根誤差): {rmse:.2f}")
+        print(f"平均每月預測誤差範圍: ±{rmse:.0f}個登記數")
+        
+        # 預測2025年數據
+        print("\n進行2025年預測...")
+        predictions_2025, conf_int = predict_2025(model)
+        
+        print("\n2025年預測結果：")
+        for month, pred in enumerate(predictions_2025, 1):
+            print(f"2025年{month}月預測登記數: {pred:.0f}")
+        
+        # 繪製結果圖表
+        print("\n繪製預測結果圖表...")
+        plot_results(actual, predictions, "台北市寵物登記數預測結果")
+        
+        # 顯示模型摘要
+        print("\n模型詳細資訊：")
+        print(model.summary())
+        
+    except Exception as e:
+        print(f"執行過程中發生錯誤: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
 
 if __name__ == "__main__":
     main()
