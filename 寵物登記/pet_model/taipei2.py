@@ -12,15 +12,15 @@ plt.rcParams['axes.unicode_minus'] = False
 # 可調參數
 PARAMS = {
     'train_size': 0.7,
-    'order': (1, 1, 1),
-    'seasonal_order': (1, 1, 1, 12),
+    'order': (1, 1, 1),           # ARIMA order (p, d, q)
+    'seasonal_order': (1, 1, 1, 12),  # Seasonal order (P, D, Q, s)
     'enforce_stationarity': False,
     'enforce_invertibility': False
 }
 
 def prepare_data():
     try:
-        # 嘗試不同的編碼方式
+        # 嘗試不同的編碼方式讀取資料
         encodings = ['utf-8', 'big5', 'cp950', 'gb18030']
         taipei_df = None
         budget_df = None
@@ -39,6 +39,7 @@ def prepare_data():
         
         # 處理預算數據
         budget_df['預算'] = budget_df['台北市預算'].str.replace(',', '').astype(float)
+        budget_df['monthly_budget'] = budget_df['預算'] / 12
         
         # 轉換日期並設置為索引
         taipei_df['date'] = pd.to_datetime(taipei_df['年'].astype(str) + '-' + 
@@ -71,16 +72,19 @@ def train_and_predict(data):
                     enforce_stationarity=PARAMS['enforce_stationarity'],
                     enforce_invertibility=PARAMS['enforce_invertibility'])
     
-    results = model.fit()
+    results = model.fit(disp=0)  # disp=0 抑制收斂訊息
     
     # 對整個歷史期間進行預測
     historical_pred = results.get_prediction(start=data.index[0], end=data.index[-1])
     historical_mean = historical_pred.predicted_mean
     
-    # 預測2024年11月到2025年12月的數據
-    forecast_dates = pd.date_range(start='2024-12-01', end='2025-12-31', freq='ME')
+    # 預測2024年12月到2025年12月的數據
+    forecast_dates = pd.date_range(start='2024-12-01', end='2025-12-31', freq='MS')
     forecast = results.get_forecast(steps=len(forecast_dates))
     forecast_mean = forecast.predicted_mean
+    
+    # 計算預測區間
+    forecast_ci = forecast.conf_int()
     
     # 確保預測值的索引正確
     forecast_mean.index = forecast_dates
@@ -93,27 +97,32 @@ def train_and_predict(data):
     # 獲取最後一個實際值的日期
     last_actual_date = data.index[-1]
     
-    return historical_mean, forecast_mean, mape, rmse, last_actual_date
+    return historical_mean, forecast_mean, forecast_ci, mape, rmse, last_actual_date
 
-def plot_results(data, historical_pred, future_pred, last_actual_date):
+def plot_results(data, historical_pred, future_pred, forecast_ci, last_actual_date):
     plt.figure(figsize=(15, 7))
     
     # 繪製實際值
     plt.plot(data.index, data['登記數'], 
             label='實際值', color='blue', linewidth=2)
     
-    # 繪製歷史預測值（到最後一個實際值）
+    # 繪製歷史預測值
     plt.plot(historical_pred.loc[:last_actual_date].index, 
             historical_pred.loc[:last_actual_date], 
             label='預測值', color='orange', linewidth=2)
     
-    # 繪製未來預測值（包括最後一個實際值，以確保連續性）
-    full_pred = pd.concat([
-        historical_pred[last_actual_date:last_actual_date],  # 包含最後一個實際值的預測
-        future_pred
-    ])
-    plt.plot(full_pred.index, full_pred, 
-            color='orange', linewidth=2)
+    # 繪製未來預測值
+    future_dates = future_pred.index
+    plt.plot(future_dates, future_pred, 
+            color='orange', linewidth=2, linestyle='--',
+            label='未來預測')
+    
+    # 添加預測區間
+    plt.fill_between(future_dates,
+                    forecast_ci.iloc[:, 0],
+                    forecast_ci.iloc[:, 1],
+                    color='orange', alpha=0.2,
+                    label='95% 預測區間')
     
     # 設置標題和標籤
     plt.title('台北市寵物登記數預測結果 (2015-2025)', fontsize=14, pad=15)
@@ -149,7 +158,7 @@ def main():
         
         # 訓練模型並進行預測
         print("\n訓練模型並進行預測...")
-        historical_pred, future_pred, mape, rmse, last_actual_date = train_and_predict(taipei_df)
+        historical_pred, future_pred, forecast_ci, mape, rmse, last_actual_date = train_and_predict(taipei_df)
         
         # 顯示模型性能
         print("\n模型性能指標：")
@@ -164,7 +173,7 @@ def main():
         
         # 繪製結果圖表
         print("\n繪製預測結果圖表...")
-        plot_results(taipei_df, historical_pred, future_pred, last_actual_date)
+        plot_results(taipei_df, historical_pred, future_pred, forecast_ci, last_actual_date)
         
     except Exception as e:
         print(f"執行過程中發生錯誤: {str(e)}")
