@@ -25,7 +25,7 @@ df['year'] = df['ds'].dt.year
 df['MA3'] = df['y'].rolling(window=3, min_periods=1).mean()
 df['MA6'] = df['y'].rolling(window=6, min_periods=1).mean()
 
-# 添加絕育相關特徵
+# 絕育相關特徵
 df['neuter_MA3'] = df['絕育數'].rolling(window=3, min_periods=1).mean()
 df['neuter_rate_MA3'] = df['絕育率'].rolling(window=3, min_periods=1).mean()
 
